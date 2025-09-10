@@ -3,6 +3,7 @@ package com.example.nuts.ui.authentication.register
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -55,7 +56,8 @@ fun RegisterScreen(onNavigateToLogin: () -> Unit) {
                         imageVector = Icons.Default.Email,
                         contentDescription = "Email Icon"
                     )
-                }
+                },
+                shape = RoundedCornerShape(15.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
@@ -68,7 +70,8 @@ fun RegisterScreen(onNavigateToLogin: () -> Unit) {
                         imageVector = Icons.Default.Person,
                         contentDescription = "User Icon"
                     )
-                }
+                },
+                shape = RoundedCornerShape(15.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
@@ -89,6 +92,7 @@ fun RegisterScreen(onNavigateToLogin: () -> Unit) {
                         Icon(imageVector = image, contentDescription = "Toggle Password Visibility")
                     }
                 },
+                shape = RoundedCornerShape(15.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
@@ -108,7 +112,8 @@ fun RegisterScreen(onNavigateToLogin: () -> Unit) {
                     IconButton(onClick = { confirmPasswordVisibility = !confirmPasswordVisibility }) {
                         Icon(imageVector = image, contentDescription = "Toggle Confirm Password Visibility")
                     }
-                }
+                },
+                shape = RoundedCornerShape(15.dp)
             )
             Spacer(modifier = Modifier.height(25.dp))
             Button(

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -62,7 +63,8 @@ fun LoginScreen(onNavigateToRegister: () -> Unit) {
                         imageVector = Icons.Default.Email,
                         contentDescription = "Email Icon"
                     )
-                }
+                },
+                shape = RoundedCornerShape(15.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
@@ -82,7 +84,8 @@ fun LoginScreen(onNavigateToRegister: () -> Unit) {
                         imageVector = Icons.Default.Lock,
                         contentDescription = "Password Icon"
                     )
-                }
+                },
+                shape = RoundedCornerShape(15.dp)
             )
             Spacer(modifier = Modifier.height(25.dp))
             Button(
