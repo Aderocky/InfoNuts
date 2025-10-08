@@ -13,8 +13,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.nuts.ui.authentication.login.LoginScreen
-import com.example.nuts.ui.authentication.register.RegisterScreen
+import com.example.nuts.navigations.NavHostNuts
+import com.example.nuts.screens.authentication.login.LoginScreen
+import com.example.nuts.screens.authentication.register.RegisterScreen
 import com.example.nuts.ui.theme.NutsTheme
 
 class MainActivity : ComponentActivity() {
@@ -23,22 +24,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NutsTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    AppNavigation()
-                }
+                NavHostNuts()
             }
         }
-    }
-}
-
-@Composable
-fun AppNavigation() {
-    val navController: NavHostController = rememberNavController()
-    NavHost(navController = navController, startDestination = "login") {
-        composable("login") { LoginScreen(onNavigateToRegister = { navController.navigate("register") }) }
-        composable("register") { RegisterScreen(onNavigateToLogin = { navController.navigate("login") }) }
     }
 }
