@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
-
 class AuthRepository(
     private val sbClient: SupabaseClient,
     context: Context
@@ -231,7 +230,28 @@ class AuthRepository(
             }
         }
     }
+    suspend fun updateUser(email: String, name: String, isPremium: Boolean, expDate: String): ResultState<UserEntity> {
+        return try {
+            val user = sbClient.from("profile").update(
+                {
+                    set("name", name)
+                    set("is_premium", isPremium)
+                    set("exp_date", if(expDate == "null") null else expDate)
+                }
+            ) {
+                select()
+                filter {
+                    eq("email", email)
+                }
+            }.decodeSingle<UserEntity>()
 
+            ResultState.Success(user)
+        } catch (e: BadRequestRestException) {
+            ResultState.Error(e.error)
+        } catch (e: Exception) {
+            ResultState.Error(e.message.orEmpty())
+        }
+    }
     private suspend fun updateIsPremium(isPremium: Boolean) {
         userPref.updatePremium(isPremium = isPremium)
         checkUserSession()
