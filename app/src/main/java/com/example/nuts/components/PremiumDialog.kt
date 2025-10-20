@@ -26,7 +26,8 @@ fun PremiumDialog(
         text = {
             Text("Untuk mengakses beberapa fitur-fitur yang terkunci, kamu dapat upgrade aplikasi ke " +
                     "premium dengan mentransfer ke rekening BCA 1160502955 dengan harga Rp30.000/Bulan\n\n" +
-                    "Kamu dapat mengirimkan bukti pembayaran kepada Admin lewat Whatsapp untuk diverifikasi")
+                    "Kamu dapat mengirimkan bukti pembayaran kepada Admin lewat Whatsapp untuk diverifikasi",
+                 color = Color.White)
         },
         confirmButton = {
             Button(onClick = onOpenWhatsApp, colors = ButtonDefaults.buttonColors(Color(0xFF25D366))) {

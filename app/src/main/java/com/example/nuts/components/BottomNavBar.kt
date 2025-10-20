@@ -17,56 +17,81 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.nuts.navigations.ScreenNuts
+import com.example.nuts.ui.theme.BrownGold
+import com.example.nuts.ui.theme.NutPrimaryDark
 import com.example.nuts.ui.theme.beige
 import com.example.nuts.ui.theme.brown
 import com.example.nuts.ui.theme.semiWhite
-
 @Composable
-fun BottomNavBar(navController: NavController) {
+fun BottomNavBar(
+    navController: NavController,
+    email: String
+) {
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination
 
     NavigationBar(
-        containerColor = semiWhite,
+        containerColor = NutPrimaryDark,
         modifier = Modifier
             .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
     ) {
+        val isHomeSelected = currentDestination?.route == ScreenNuts.Home.route
         NavigationBarItem(
-            selected = currentDestination?.route == ScreenNuts.Home.route,
-            onClick = { navController.navigate(ScreenNuts.Home.route) },
+            selected = isHomeSelected,
+            onClick = {
+                if (!isHomeSelected){
+                    navController.navigate(ScreenNuts.Home.route) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = false
+                    }
+                }
+            },
             icon = { Icon(Icons.Default.Home, contentDescription = ScreenNuts.Home.route) },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = Color.White,
                 unselectedIconColor = Color.White,
-                indicatorColor = brown
+                indicatorColor = BrownGold
             )
         )
 
+        val isKlasifikasiSelected = currentDestination?.route == ScreenNuts.Klasifikasi.route
         NavigationBarItem(
-            selected = currentDestination?.route == ScreenNuts.Klasifikasi.route,
-            onClick = { navController.navigate(ScreenNuts.Klasifikasi.route) },
+            selected = isKlasifikasiSelected,
+            onClick = {
+                if(!isKlasifikasiSelected) {
+                    navController.navigate(ScreenNuts.Klasifikasi.route) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = false
+                    }
+                }
+            },
             icon = { Icon(Icons.Default.Search, contentDescription = ScreenNuts.Klasifikasi.route) },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = Color.White,
                 unselectedIconColor = Color.White,
-                indicatorColor = brown
+                indicatorColor = BrownGold
             )
         )
+
+        val isHistorySelected = currentDestination?.route?.startsWith("history") == true
         NavigationBarItem(
-            selected = currentDestination?.route?.startsWith("history") == true,
+            selected = isHistorySelected,
             onClick = {
-                navController.navigate("history") {
-                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                    launchSingleTop = true
-                    restoreState = false
+                if (!isHistorySelected) {
+                    navController.navigate(ScreenNuts.History.createRoute(email)) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = false
+                    }
                 }
             },
             icon = { Icon(Icons.Default.History, contentDescription = "History") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = Color.White,
                 unselectedIconColor = Color.White,
-                indicatorColor = brown
+                indicatorColor = BrownGold
             )
         )
-
     }
 }

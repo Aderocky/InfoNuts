@@ -8,6 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.nuts.ui.theme.NutPrimaryDark
+import com.example.nuts.ui.theme.NutPrimaryLight
 
 @Composable
 fun LogoutConfirmDialog(
@@ -24,16 +26,16 @@ fun LogoutConfirmDialog(
             )
         },
         text = {
-            Text("Are you sure you want to log out?")
+            Text("Are you sure you want to log out?", color = Color.White, fontWeight = FontWeight.SemiBold)
         },
         confirmButton = {
-            Button(onClick = onConfirm, colors = ButtonDefaults.buttonColors(Color.Red)) {
-                Text("Confirm")
+            Button(onClick = onConfirm, colors = ButtonDefaults.buttonColors(NutPrimaryDark)) {
+                Text("Yes", color = Color.White, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
+            Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(NutPrimaryLight)) {
+                Text("No",color = Color.White,fontWeight = FontWeight.Bold)
             }
         }
     )

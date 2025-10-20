@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.SystemClock
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -37,6 +38,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,8 +58,14 @@ import com.example.nuts.clasifications.ClassificationResult
 import com.example.nuts.clasifications.Classifier
 import com.example.nuts.components.BottomNavBar
 import com.example.nuts.components.CurvedTopBar
+import com.example.nuts.data.di.DatabaseSupabaseClient
+import com.example.nuts.data.repository.AuthRepository
 import com.example.nuts.navigations.ScreenNuts
+import com.example.nuts.screens.authentication.ViewModelFactory
 import com.example.nuts.state.ResultState
+import com.example.nuts.ui.theme.BrownGold
+import com.example.nuts.ui.theme.NutPrimaryLight
+import com.example.nuts.ui.theme.NutTextPrimary
 import com.example.nuts.ui.theme.brown
 import com.example.nuts.ui.theme.krem
 import java.io.File
@@ -68,13 +76,41 @@ fun Klasifikasi (
     navController: NavHostController,
 ){
     val context = LocalContext.current
+
     val classifier = remember { Classifier(context) }
-    val viewModel: KlasifikasiViewModel = viewModel(
-        factory = KlasifikasiViewModelFactory(classifier)
+    val authRepository = remember {
+        AuthRepository(
+            sbClient = DatabaseSupabaseClient.client(),
+            context = context
+        )
+    }
+    val viewModelKlasifikasi: KlasifikasiViewModel = viewModel(
+        factory = ViewModelFactory(authRepository, classifier)
     )
+    val userState = viewModelKlasifikasi.userState.observeAsState()
     var isPremium by remember { mutableStateOf(false) }
     val bitmapState = remember { mutableStateOf<Bitmap?>(null) }
-    val resultState by viewModel.result.collectAsState(initial = ResultState.Loading)
+    val resultState by viewModelKlasifikasi.result.collectAsState(initial = ResultState.Loading)
+    var email by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        val savedEmail = viewModelKlasifikasi.getCurrentEmail()
+        if (!savedEmail.isNullOrEmpty()) {
+            email = savedEmail
+        }
+    }
+    userState.value.let {
+        LaunchedEffect(it) {
+            when (it) {
+                is ResultState.Success -> {
+                    isPremium = it.data.isPremium
+                    Log.d("ade", "premium $isPremium")
+                }
+                else -> {
+                }
+            }
+        }
+    }
 
     KlasifikasiScreen(
         navController = navController ,
@@ -83,10 +119,11 @@ fun Klasifikasi (
         bitmapState = bitmapState,
         onClassify =  { bitmap ->
             val start = SystemClock.uptimeMillis()
-            viewModel.classify(bitmap,start)
+            viewModelKlasifikasi.classify(bitmap,start)
         },
         result = resultState,
-        resetResultState = {viewModel.resetResultState()},
+        email = email,
+        resetResultState = {viewModelKlasifikasi.resetResultState()},
     )
 
 }
@@ -99,6 +136,7 @@ fun KlasifikasiScreen(
     bitmapState: MutableState<Bitmap?>,
     onClassify: (Bitmap) -> Unit,
     result: ResultState<ClassificationResult>,
+    email: String,
     resetResultState: () -> Unit
 ){
 
@@ -123,12 +161,16 @@ fun KlasifikasiScreen(
         if (result is ResultState.Success) {
             val data = result.data
 
-            val path = context.getExternalFilesDir(null)!!.absolutePath
-            val imagePath = "$path/tempFileName.jpg"
+            val emailFolder = File(context.getExternalFilesDir(null), email)
 
-            val fOut = FileOutputStream(File(imagePath))
-            bitmapState.value?.compress(Bitmap.CompressFormat.JPEG, 100, fOut)
-            fOut.close()
+            if (!emailFolder.exists()) {
+                emailFolder.mkdirs()
+            }
+            val imagePath = File(emailFolder, "tempFileName.jpg").absolutePath
+
+            FileOutputStream(imagePath).use { output ->
+                bitmapState.value?.compress(Bitmap.CompressFormat.JPEG, 100, output)
+            }
 
             navController.navigate(
                 ScreenNuts.Hasil.createRoute(
@@ -149,9 +191,9 @@ fun KlasifikasiScreen(
             )
         },
         bottomBar = {
-            BottomNavBar(navController)
+            BottomNavBar(navController,email)
         },
-        containerColor = krem
+        containerColor = NutPrimaryLight
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -165,7 +207,7 @@ fun KlasifikasiScreen(
                 modifier = Modifier
                     .size(290.dp)
                     .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
-                    .border(2.dp, Color.Black, RoundedCornerShape(10.dp)),
+                    .border(2.dp, NutTextPrimary, RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 if (bitmapState.value != null) {
@@ -176,7 +218,7 @@ fun KlasifikasiScreen(
                             .fillMaxWidth()
                             .aspectRatio(1f)
                             .clip(RoundedCornerShape(8.dp))
-                            .border(2.dp, Color.Black, RoundedCornerShape(10.dp)),
+                            .border(2.dp, NutTextPrimary, RoundedCornerShape(10.dp)),
                     contentScale = ContentScale.Crop
                     )
                 } else {
@@ -199,11 +241,14 @@ fun KlasifikasiScreen(
                     onClick = {
                         launcher.launch()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = brown),
                     modifier = Modifier
                         .width(110.dp)
-                        .height(50.dp)
-
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isPremium) BrownGold else Color.Gray,
+                    disabledContainerColor = Color.Gray.copy(alpha = 0.5f)
+                ),
+                enabled = isPremium
                 ) {
                     Icon(Icons.Default.CameraAlt, contentDescription = "Camera",
                          modifier = Modifier.size(30.dp),
@@ -213,7 +258,7 @@ fun KlasifikasiScreen(
 
                 Button(
                     onClick = { galleryLauncher.launch("image/*") },
-                    colors = ButtonDefaults.buttonColors(containerColor = brown),
+                    colors = ButtonDefaults.buttonColors(containerColor = BrownGold),
                     modifier = Modifier
                         .width(110.dp)
                         .height(50.dp)
@@ -239,7 +284,7 @@ fun KlasifikasiScreen(
                 modifier = Modifier
                     .fillMaxWidth(0.83f)
                     .height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = brown,
+                colors = ButtonDefaults.buttonColors(containerColor = BrownGold,
                     disabledContainerColor = Color.Gray)
             ) {
                 Text(

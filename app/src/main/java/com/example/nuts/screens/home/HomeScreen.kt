@@ -1,17 +1,19 @@
 package com.example.nuts.screens.home
 
 import android.content.Intent
-import android.net.Uri
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,14 +26,19 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,55 +68,112 @@ import com.example.nuts.ui.theme.brown
 import com.example.nuts.ui.theme.krem
 import com.example.nuts.utils.drawableImageNuts
 import com.example.nuts.utils.latinNameNuts
+import androidx.core.net.toUri
+import com.example.nuts.data.di.DatabaseSupabaseClient
+import com.example.nuts.data.repository.AuthRepository
+import com.example.nuts.screens.authentication.ViewModelFactory
+import com.example.nuts.state.ResultState
+import com.example.nuts.ui.theme.BrownCustom
+import com.example.nuts.ui.theme.BrownGold
+import com.example.nuts.ui.theme.NutPrimaryLight
+import com.example.nuts.ui.theme.NutTextPrimary
+import kotlinx.coroutines.launch
 
 @Composable
 fun Home(
     navController: NavHostController,
 ){
-    var isPremium by remember { mutableStateOf(false) }
-    var showLogoutDialog by remember { mutableStateOf(false) }
-    var showPremiumDialog by remember { mutableStateOf(false) }
-    val viewModel: NutsViewModel = viewModel(LocalContext.current as ComponentActivity)
     val context = LocalContext.current
-    val nutsData = viewModel.nutsData
 
-    if (showPremiumDialog) {
-        PremiumDialog(
-            onOpenWhatsApp = {
-                showPremiumDialog = false
-                val phoneNumber = "+6282176095404"
-                val url = "https://wa.me/$phoneNumber"
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    data = Uri.parse(url)
-                }
-                context.startActivity(intent)
-            },
-            onDismiss = {
-                showPremiumDialog = false
-            }
+    val authRepository = remember {
+        AuthRepository(
+            sbClient = DatabaseSupabaseClient.client(),
+            context = context
         )
     }
-
-    if (showLogoutDialog) {
-        LogoutConfirmDialog(
-            onConfirm = {
-                showLogoutDialog = false
-                // Tambahkan logika logout di sini
-            },
-            onDismiss = {
-                showLogoutDialog = false
-            }
-        )
-    }
-
-
-    HomeScreen(
-        navController = navController,
-        onLogoutClick = { showLogoutDialog = true },
-        onPremiumClick = { showPremiumDialog = true },
-        isPremium = isPremium,
-        nutsData = nutsData
+    val viewModelHome : HomeScreenViewModel = viewModel (
+        factory = ViewModelFactory(authRepository)
     )
+
+    val userState = viewModelHome.userState.observeAsState(ResultState.Loading)
+    val email by produceState(initialValue = "") {
+        value = viewModelHome.getCurrentEmail().orEmpty()
+    }
+
+    when (val state = userState.value) {
+        is ResultState.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = brown)
+            }
+        }
+
+        is ResultState.Success -> {
+            var showLogoutDialog by remember { mutableStateOf(false) }
+            var showPremiumDialog by remember { mutableStateOf(false) }
+            val activity = LocalContext.current as ComponentActivity
+            val viewModel: NutsViewModel = viewModel(activity)
+
+            val coroutineScope = rememberCoroutineScope()
+            val nutsData = viewModel.nutsData
+
+            val imageCounts by viewModelHome.imageCounts.collectAsState()
+            LaunchedEffect(Unit) {
+                viewModelHome.loadImageCounts(context,email,nutsData)
+            }
+
+            if (showPremiumDialog) {
+                PremiumDialog(
+                    onOpenWhatsApp = {
+                        showPremiumDialog = false
+                        val phoneNumber = "+6282176095404"
+                        val url = "https://wa.me/$phoneNumber"
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            data = url.toUri()
+                        }
+                        context.startActivity(intent)
+                    },
+                    onDismiss = {
+                        showPremiumDialog = false
+                    }
+                )
+            }
+            if (showLogoutDialog) {
+                LogoutConfirmDialog(
+                    onConfirm = {
+                        coroutineScope.launch {
+                            viewModelHome.logOut()
+                            showLogoutDialog = false
+                            navController.navigate(ScreenNuts.Login.route) {
+                                popUpTo(0)
+                            }
+                        }
+                    },
+                    onDismiss = { showLogoutDialog = false }
+                )
+            }
+            HomeScreen(
+                navController = navController,
+                onLogoutClick = { showLogoutDialog = true },
+                onPremiumClick = { showPremiumDialog = true },
+                isPremium = state.data.isPremium,
+                name = state.data.name,
+                email = email,
+                nutsData = nutsData,
+                imageCounts = imageCounts,
+            )
+        }
+
+        is ResultState.Error -> {
+            Text(
+                text = "Gagal memuat data: ${state.message}",
+                color = Color.Red,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
 }
 
 @Composable
@@ -118,12 +182,17 @@ fun HomeScreen(
     onLogoutClick: () -> Unit,
     onPremiumClick: () -> Unit,
     isPremium: Boolean,
-    nutsData: List<String>
+    name: String ,
+    email: String,
+    nutsData: List<String>,
+    imageCounts: Map<String,Int>
     ) {
+    Log.d("ade", "ganteng $email")
     Scaffold(
         topBar = {
             CurvedTopBarActions(
-                title = "Welcome, User!",
+
+                title = "Welcome, $name!",
                 actions = {
                         if (!isPremium) {
                             Icon(
@@ -147,8 +216,8 @@ fun HomeScreen(
                 }
             )
                  },
-        bottomBar = { BottomNavBar(navController) },
-        containerColor = krem
+        bottomBar = { BottomNavBar(navController, email) },
+        containerColor = NutPrimaryLight
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -164,7 +233,7 @@ fun HomeScreen(
                         .padding(top = 27.dp, bottom = 20.dp),
                         text = "Collections Nuts",
                         fontWeight = FontWeight.Bold,
-                        color = brown,
+                        color = NutTextPrimary,
                         fontSize = 36.sp,
                         textAlign = TextAlign.Center
                     )
@@ -175,15 +244,17 @@ fun HomeScreen(
                 nutsData,
                 key = { it }
             ){ item->
+                val count = imageCounts[item] ?: 0
                 Card(
                     shape = RoundedCornerShape(15.dp),
-                    border = BorderStroke(3.dp, Color.Black),
-                    colors = CardDefaults.cardColors(containerColor = beige),
+                    border = BorderStroke(3.dp, BrownCustom),
+                    colors = CardDefaults.cardColors(containerColor = BrownGold),
+                    elevation = CardDefaults.cardElevation(3.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 0.dp, vertical = 4.dp)
                         .clickable {
-                            navController.navigate(ScreenNuts.History.createRoute(folderName = item))
+                            navController.navigate(ScreenNuts.History.createRoute(email = email ,folderName = item))
                         }
                 ) {
                     Row(
@@ -200,7 +271,7 @@ fun HomeScreen(
                                 modifier = Modifier
                                     .size(90.dp)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .border(1.dp, Color.Gray, RoundedCornerShape(10.dp)),
+                                    .border(1.dp, NutTextPrimary, RoundedCornerShape(10.dp)),
                             )
                         }
 
@@ -222,6 +293,13 @@ fun HomeScreen(
                                 fontFamily = FontFamily.Serif,
                                 fontWeight = FontWeight.Light,
                                 fontStyle = FontStyle.Italic,
+                                color = CreamMain
+                            )
+                            Text(
+                                text = "$count gambar tersimpan",
+                                fontSize = 14.sp,
+                                fontFamily = FontFamily.Serif,
+                                fontWeight = FontWeight.Light,
                                 color = CreamMain
                             )
                         }

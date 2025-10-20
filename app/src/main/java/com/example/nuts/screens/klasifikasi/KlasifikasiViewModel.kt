@@ -5,20 +5,25 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.nuts.clasifications.ClassificationResult
 import com.example.nuts.clasifications.Classifier
+import com.example.nuts.data.repository.AuthRepository
 import com.example.nuts.state.ResultState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class KlasifikasiViewModel(
-    private val classifier: Classifier
+    private val classifier: Classifier,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _result = MutableSharedFlow<ResultState<ClassificationResult>>()
     val result = _result.asSharedFlow()
+
+    val userState = authRepository.userState.asLiveData()
 
     fun classify(bitmap: Bitmap, start: Long) {
         viewModelScope.launch {
@@ -40,16 +45,8 @@ class KlasifikasiViewModel(
             _result.emit(ResultState.Loading)
         }
     }
-}
 
-class KlasifikasiViewModelFactory(
-    private val classifier: Classifier
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(KlasifikasiViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return KlasifikasiViewModel(classifier) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
+    suspend fun getCurrentEmail(): String?{
+        return authRepository.getCurrentUserEmail()
     }
 }

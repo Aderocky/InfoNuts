@@ -52,7 +52,6 @@ class Classifier(private val context: Context) {
             timeMs = elapsed,
         )
     }
-
     private fun loadModelFile(modelName: String): MappedByteBuffer {
         val afd = context.assets.openFd(modelName)
         val inputStream = FileInputStream(afd.fileDescriptor)
@@ -61,9 +60,4 @@ class Classifier(private val context: Context) {
     }
 }
 
-data class ClassificationResult(
-    val label: String,
-    val confidence: Float,
-    val timeMs: Long
-)
 

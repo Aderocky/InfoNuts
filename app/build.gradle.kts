@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-kapt")
+    kotlin("plugin.serialization") version "1.9.0"
 }
 
 val localProperties = Properties().apply {
@@ -82,6 +84,20 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    implementation (libs.androidx.room.ktx)
+    kapt (libs.androidx.room.compiler)
+
+    implementation (libs.androidx.core.splashscreen)
+
+    implementation(libs.accompanist.systemuicontroller)
+
+    implementation(libs.androidx.datastore.preferences)
+
+    implementation(libs.lifecycle.runtime.ktx)
+    implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.lifecycle.livedata.ktx)
+    implementation(libs.runtime.livedata)
 
     implementation(libs.coil.compose)
 

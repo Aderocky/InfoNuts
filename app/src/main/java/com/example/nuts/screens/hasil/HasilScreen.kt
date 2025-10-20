@@ -27,7 +27,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,14 +43,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.nuts.components.BottomNavBar
 import com.example.nuts.components.CurvedTopBar
+import com.example.nuts.data.di.DatabaseSupabaseClient
+import com.example.nuts.data.repository.AuthRepository
 import com.example.nuts.navigations.ScreenNuts
+import com.example.nuts.screens.authentication.ViewModelFactory
+import com.example.nuts.state.ResultState
 import com.example.nuts.ui.theme.brown
 import com.example.nuts.ui.theme.krem
+import com.example.nuts.utils.infoAlergic
+import com.example.nuts.utils.infoNuts
 import com.example.nuts.utils.latinNameNuts
 import com.example.nuts.utils.saveImageToFolderTemp
 import java.io.File
@@ -59,19 +72,43 @@ fun Hasil(
     fileName: String? = null
 ){
     val context = LocalContext.current
-    val image: Bitmap?
-    val imagePath: String
 
-    if (fileName == null) {
-        val path = context.getExternalFilesDir(null)!!.absolutePath
-        imagePath = "$path/tempFileName.jpg"
-        image = remember { BitmapFactory.decodeFile(imagePath) }
-    } else {
-        val folder = File(context.getExternalFilesDir(null), name)
-        val file = File(folder, fileName)
-        imagePath = file.absolutePath
-        image = remember { BitmapFactory.decodeFile(imagePath) }
+    val authRepository = remember {
+        AuthRepository(
+            sbClient = DatabaseSupabaseClient.client(),
+            context = context
+        )
     }
+    val viewModelHasil : HasilViewModel = viewModel (
+        factory = ViewModelFactory(authRepository)
+    )
+
+    val userState = viewModelHasil.userState.observeAsState()
+    var isPremium by remember { mutableStateOf(false) }
+    var email by remember { mutableStateOf("") }
+
+    userState.value.let {
+        LaunchedEffect(it) {
+            when (it) {
+                is ResultState.Success -> {
+                    email = it.data.email
+                    isPremium = it.data.isPremium
+                }
+                else -> {
+                }
+            }
+        }
+    }
+
+    val imagePath = if (!fileName.isNullOrEmpty()) {
+        val folder = File(context.getExternalFilesDir(null), "$email/$name")
+        File(folder, fileName).absolutePath
+    } else {
+        val folder = File(context.getExternalFilesDir(null), email)
+        File(folder, "tempFileName.jpg").absolutePath
+    }
+
+    val image = remember(imagePath) { BitmapFactory.decodeFile(imagePath) }
 
     HasilScreen(
         navController = navController,
@@ -81,6 +118,8 @@ fun Hasil(
         timeCost = timeCost,
         image = image,
         imagePath = imagePath,
+        email = email,
+        isPremium = isPremium,
     )
 }
 
@@ -93,6 +132,8 @@ fun HasilScreen(
     timeCost: Long = 0L,
     image: Bitmap?,
     imagePath: String,
+    email: String,
+    isPremium: Boolean
 ){
     val context = LocalContext.current
 
@@ -104,7 +145,7 @@ fun HasilScreen(
             )
         },
         bottomBar = {
-            BottomNavBar(navController)
+            BottomNavBar(navController,email)
         },
         containerColor = krem
     ){ innerPadding ->
@@ -163,18 +204,38 @@ fun HasilScreen(
                     fontStyle = FontStyle.Italic,
                     fontFamily = FontFamily.Serif
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    text = """
-                    Kacang tanah adalah salah satu jenis kacang yang banyak dikonsumsi...
-                    
-                    Informasi bisa sangat panjang di sini, menjelaskan manfaat, kandungan gizi, habitat, sejarah, dan lain-lain.
-                    
-                    Karena teks ini dibungkus dalam Column + verticalScroll, maka jika panjang, user bisa menggulir ke bawah untuk membaca semuanya.
-                """.trimIndent(),
+                    text = "Informasi umum :",
+                    fontSize = 18.sp,
+                    lineHeight = 20.sp,
+                    textAlign = TextAlign.Left,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(
+                    text = infoNuts[name].toString(),
                     fontSize = 16.sp,
-                    lineHeight = 22.sp
+                    lineHeight = 22.sp,
+                    textAlign = TextAlign.Justify,
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Informasi terkait alergi :",
+                    lineHeight = 20.sp,
+                    textAlign = TextAlign.Left,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(
+                    text = infoAlergic[name].toString(),
+                    fontSize = 16.sp,
+                    lineHeight = 22.sp,
+                    textAlign = TextAlign.Justify,
                 )
             }
             if(confidence != 0f && timeCost != 0L){
@@ -196,14 +257,19 @@ fun HasilScreen(
                             saveImageToFolderTemp(
                                 context = context,
                                 bitmap = image,
-                                folderName = name
+                                folderName = name,
+                                email = email,
                             )
                             navController.navigate(ScreenNuts.Home.route) {
-                                popUpTo(ScreenNuts.Home.route) { inclusive = true }
+                                popUpTo(ScreenNuts.Hasil.route) { inclusive = true }
                             }
                         },
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = brown)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isPremium) brown else Color.Gray,
+                            disabledContainerColor = Color.Gray.copy(alpha = 0.5f)
+                        ),
+                        enabled = isPremium
                     ) {
                         Text("Simpan", color = Color.White)
                     }

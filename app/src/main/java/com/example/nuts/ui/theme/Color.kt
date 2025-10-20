@@ -15,6 +15,15 @@ val RedMain = Color(0xFFB8001F)
 val beige = Color(0xFFD8C3B0)
 
 val krem = Color(0xFFFAF6F2)
+val BrownCustom = Color(0xFFB1741F)
+val BrownGold = Color(0xFFD99333)
+val NutPrimary = Color(0xFFD89B4A)
+val NutPrimaryDark = Color(0xFFB3752D)
+val NutPrimaryLight = Color(0xFFEABF83)
+val NutBackground = Color(0xFFFFF8F2)
+val NutTextPrimary = Color(0xFFFFFFFF)
+val NutTextSecondary = Color(0xFFF8EBD4)
+val NutIconInactive = Color(0xFFE6D3B5)
 
 val semiWhite= Color(0xFFB8A899)
 

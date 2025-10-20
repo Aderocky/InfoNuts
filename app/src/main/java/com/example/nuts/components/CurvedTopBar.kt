@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.nuts.R
+import com.example.nuts.ui.theme.NutPrimaryDark
 import com.example.nuts.ui.theme.beige
 import com.example.nuts.ui.theme.semiWhite
 
@@ -46,7 +47,7 @@ fun CurvedTopBarActions(
             .fillMaxWidth()
             .height(120.dp)
             .clip(ArcShape())
-            .background(semiWhite),
+            .background(NutPrimaryDark),
         contentAlignment = Alignment.Center
     ) {
         Row(
@@ -80,7 +81,7 @@ fun CurvedTopBar(
             .fillMaxWidth()
             .height(120.dp)
             .clip(ArcShape())
-            .background(semiWhite)
+            .background(NutPrimaryDark)
     ) {
         Text(
             text = title,
