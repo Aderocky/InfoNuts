@@ -70,6 +70,8 @@ import com.example.nuts.ui.theme.brown
 import com.example.nuts.ui.theme.krem
 import java.io.File
 import java.io.FileOutputStream
+import androidx.core.graphics.scale
+import com.example.nuts.utils.compressBitmap
 
 @Composable
 fun Klasifikasi (
@@ -141,11 +143,14 @@ fun KlasifikasiScreen(
 ){
 
     val context = LocalContext.current
+    val maxDimension = 5000
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { capturedBitmap ->
-        bitmapState.value = capturedBitmap
+        capturedBitmap?.let {
+            bitmapState.value = compressBitmap(it, maxDimension)
+        }
     }
 
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -153,7 +158,7 @@ fun KlasifikasiScreen(
     ) { uri: Uri? ->
         uri?.let {
             val source = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
-            bitmapState.value = source
+            bitmapState.value = compressBitmap(source, maxDimension)
         }
     }
 

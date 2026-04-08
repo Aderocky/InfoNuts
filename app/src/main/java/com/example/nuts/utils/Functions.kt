@@ -10,6 +10,8 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.core.graphics.scale
+
 fun saveImageToFolderTemp(
     context: Context,
     bitmap: Bitmap?,
@@ -67,7 +69,6 @@ fun loadImagesWithNamesFromFolder(
             val bitmap = BitmapFactory.decodeFile(file.absolutePath)
             val dateSaved = file.nameWithoutExtension
                 .removePrefix("image_")
-
 
             imageList.add(
                 HistoryItem(
@@ -129,5 +130,17 @@ fun loadAllSavedImages(context: Context, email: String): List<HistoryItem> {
     return list.sortedByDescending { it.dateSaved }
 }
 
+fun compressBitmap(bitmap: Bitmap, maxSize: Int): Bitmap {
+    val width = bitmap.width
+    val height = bitmap.height
+
+    if (width <= maxSize && height <= maxSize) return bitmap
+
+    val scale = minOf(maxSize.toFloat() / width, maxSize.toFloat() / height)
+    val newWidth = (width * scale).toInt()
+    val newHeight = (height * scale).toInt()
+
+    return bitmap.scale(newWidth, newHeight)
+}
 
 

@@ -39,6 +39,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -69,10 +70,12 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
 
     implementation(platform(libs.supabase.bom))
+
     implementation(libs.supabase.postgrest)
     implementation(libs.supabase.realtime)
     implementation(libs.gotrue.kt)
     implementation(libs.ktor.ktor.client.cio)
+
     implementation(libs.tensorflow.lite.gpu)
     implementation (libs.tensorflow.lite)
     implementation (libs.tensorflow.lite.support)

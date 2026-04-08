@@ -1,7 +1,9 @@
 package com.example.nuts.data.repository
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.example.nuts.data.entity.UserEntity
 import com.example.nuts.data.pref.SharePrefModel
 import com.example.nuts.data.pref.SharePreferencesUser
@@ -30,6 +32,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import kotlinx.serialization.json.Json
 
 class AuthRepository(
@@ -61,6 +64,7 @@ class AuthRepository(
             updateIsPremium(user.isPremium)
         }
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     fun register(
         email: String,
         name: String,
@@ -85,12 +89,15 @@ class AuthRepository(
                         val currentUser = sbClient.auth.currentUserOrNull()
                         if (currentUser != null) {
                             val userId = currentUser.id
+                            val expDate = LocalDateTime.now().plusDays(7).toString()
 
                             sbClient.from("profile").insert(
                                 UserEntity(
                                     userId = userId,
                                     name = name,
-                                    email = email
+                                    email = email,
+                                    isPremium = true,
+                                    expDate = expDate
                                 )
                             )
                             _authState.value = AuthState.Success("Registrasi berhasil!")

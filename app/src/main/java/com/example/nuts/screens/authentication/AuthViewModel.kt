@@ -6,7 +6,6 @@ import com.example.nuts.data.repository.AuthRepository
 import com.example.nuts.state.AuthState
 import androidx.lifecycle.asLiveData
 
-
 class AuthViewModel (
     private val authRepository: AuthRepository
 ): ViewModel() {
