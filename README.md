@@ -1,4 +1,4 @@
-# 🌰 Nuts App - Smart Nut Classification & Management
+# 🌰 Nuts App - Smart Nut Classification
 
 Selamat datang di **Nuts App**! Sebuah aplikasi Android modern yang dirancang untuk membantu pengguna mengklasifikasikan berbagai jenis kacang seperti **Almond, Chestnut, dan Hazelnut** dengan mudah dan cepat. 🚀🥜
 
