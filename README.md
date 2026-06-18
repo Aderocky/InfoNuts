@@ -10,10 +10,7 @@ Berikan cuplikan tampilan aplikasi yang menawan di sini:
 
 | Login & Auth | Home Dashboard | History & Logs |
 | :---: | :---: | :---: |
-| <img width="200" alt="e4ddd4bf-21b1-448b-a89f-89887789b8b6" src="https://github.com/user-attachments/assets/5aa45722-d8c4-473a-90f1-4e53797e811e" /> | <img width="200" alt="f350c931-c1e2-4884-afd8-282e3b969190" src="https://github.com/user-attachments/assets/ea0a5e77-ac48-4bd1-9f5b-5cf0861cb027" />
- | <img width="200" alt="b246616d-aa7b-4f77-8b99-2607c97b932a" src="https://github.com/user-attachments/assets/940068b3-1853-4b57-9968-0312b7f5d789" /> |
-
-*(Tips: Ganti URL gambar di atas dengan screenshot asli aplikasi Anda setelah di-upload ke GitHub)*
+| <img width="200" alt="e4ddd4bf-21b1-448b-a89f-89887789b8b6" src="https://github.com/user-attachments/assets/5aa45722-d8c4-473a-90f1-4e53797e811e" /> | <img width="200" alt="f350c931-c1e2-4884-afd8-282e3b969190" src="https://github.com/user-attachments/assets/ea0a5e77-ac48-4bd1-9f5b-5cf0861cb027" /> | <img width="200" alt="b246616d-aa7b-4f77-8b99-2607c97b932a" src="https://github.com/user-attachments/assets/940068b3-1853-4b57-9968-0312b7f5d789" /> 
 
 ---
 
