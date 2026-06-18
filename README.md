@@ -1,42 +1,45 @@
-# Nuts - Aplikasi Manajemen & Klasifikasi Kacang
+# 🌰 Nuts App - Smart Nut Classification & Management
 
-Aplikasi Android berbasis **Jetpack Compose** yang dirancang untuk mengelola dan mengklasifikasikan data gambar berbagai jenis kacang (Almond, Chestnut, Hazelnut). Proyek ini merupakan bagian dari Tugas Akhir.
-
-## 🚀 Fitur Utama
-- **Autentikasi User**: Login dan Logout yang terintegrasi dengan Supabase.
-- **Manajemen Gambar**: Menghitung secara otomatis jumlah gambar kacang yang tersimpan di memori perangkat berdasarkan folder user.
-- **Status Premium & Admin**: Manajemen hak akses user (Premium/Admin) yang tersimpan secara lokal dan sinkron dengan server.
-- **Sinkronisasi Realtime**: Menggunakan database realtime untuk pembaruan data secara instan.
-
-## 🛠️ Tech Stack
-- **Bahasa**: Kotlin
-- **UI Framework**: Jetpack Compose (Material 3)
-- **Arsitektur**: MVVM (Model-View-ViewModel)
-- **Local Database**: Room Persistence
-- **Backend/API**: Supabase (Postgrest & Realtime)
-- **Dependency Injection**: Manual DI dengan `ViewModelFactory`
-- **Asynchronous**: Kotlin Coroutines & StateFlow
-
-## 🏗️ Penjelasan Arsitektur
-
-### 1. ViewModel & Lifecycle
-Aplikasi ini menggunakan **ViewModel** untuk memisahkan logika bisnis dari tampilan (UI). ViewModel memastikan data tetap aman saat terjadi perubahan konfigurasi (seperti rotasi layar). Penggunaan `viewModelScope` memastikan semua proses latar belakang berhenti secara otomatis mengikuti siklus hidup (lifecycle) ViewModel untuk menghindari kebocoran memori.
-
-### 2. State Management
-Pengelolaan status aplikasi menggunakan **StateFlow**. Dengan pola ini, UI akan otomatis memperbarui tampilannya segera setelah data di dalam ViewModel berubah. Contohnya pada penghitungan jumlah gambar kacang yang diperbarui secara reaktif.
-
-### 3. Dependency Injection (DI)
-Proyek ini menerapkan **Manual Dependency Injection**. Objek seperti `AuthRepository` dan `Classifier` disuntikkan ke dalam ViewModel melalui `ViewModelFactory`. Hal ini membuat kode lebih modular, mudah diuji (testable), dan efisien dalam penggunaan memori (singleton pattern).
-
-### 4. Data Entity
-`UserEntity` digunakan sebagai model data tunggal yang berfungsi ganda:
-- Sebagai **Tabel Database** (Room) untuk penyimpanan offline.
-- Sebagai **Data Mapping** (Serialization) untuk komunikasi dengan server Supabase.
-
-## 📁 Struktur Folder Utama
-- `screens/`: Berisi UI Compose dan ViewModel untuk setiap halaman (Home, History, dll).
-- `data/`: Berisi Repository dan Entity (Sumber data).
-- `ui/theme/`: Pengaturan tema warna dan tipografi Material 3.
+Selamat datang di **Nuts App**! Sebuah aplikasi Android modern yang dirancang untuk membantu pengguna mengelola, menghitung, dan mengklasifikasikan berbagai jenis kacang seperti **Almond, Chestnut, dan Hazelnut** dengan mudah dan cepat. 🚀🥜
 
 ---
-*Proyek ini dikembangkan sebagai syarat Tugas Akhir.*
+
+## 📸 App Preview
+Berikan cuplikan tampilan aplikasi yang menawan di sini:
+
+| Login & Auth | Home Dashboard | History & Logs |
+| :---: | :---: | :---: |
+| <img src="https://via.placeholder.com/200x400?text=Login+Screen" width="200" /> | <img src="https://via.placeholder.com/200x400?text=Home+Screen" width="200" /> | <img src="https://via.placeholder.com/200x400?text=History+Screen" width="200" /> |
+
+*(Tips: Ganti URL gambar di atas dengan screenshot asli aplikasi Anda setelah di-upload ke GitHub)*
+
+---
+
+## ✨ Fitur Unggulan
+- 🔐 **Secure Authentication**: Sistem login dan registrasi aman yang terintegrasi dengan **Supabase**.
+- 📊 **Auto Image Tracker**: Secara otomatis memindai folder penyimpanan dan menghitung koleksi foto kacang Anda.
+- 💎 **Premium & Admin Features**: Kendali penuh untuk akun Admin dan fitur eksklusif bagi pengguna Premium.
+- 🔄 **Real-time Synchronization**: Data tersinkronisasi secara instan di semua perangkat menggunakan database realtime.
+- 🎨 **Modern UI**: Antarmuka bersih dan responsif menggunakan **Jetpack Compose** dan **Material 3**.
+
+---
+
+## 🛠️ Tech Stack & Library
+Aplikasi ini dibangun menggunakan teknologi terkini di ekosistem Android:
+
+- 📱 **UI Framework**: [Jetpack Compose](https://developer.android.com/jetpack/compose) (Material 3)
+- 🚀 **Language**: [Kotlin](https://kotlinlang.org/)
+- 📦 **Local Storage**: [Room Database](https://developer.android.com/training/data-storage/room)
+- ⚡ **Backend**: [Supabase](https://supabase.com/) (Postgrest & Realtime)
+- 🏗️ **Architecture**: MVVM (Model-View-ViewModel)
+- 🧵 **Concurrency**: Kotlin Coroutines & StateFlow
+
+---
+
+## 📂 Struktur Project
+- `screens/` - Tempat semua keajaiban UI dan logika layar berada 🎨
+- `data/` - Pusat pengelolaan data, repository, dan database 💾
+- `ui/theme/` - Pengaturan gaya, warna, dan identitas visual aplikasi 🌈
+
+---
+Developed with ❤️ by **Aderocky**
